@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -54,4 +53,7 @@ app.post('/chat', async (req, res) => {
     }
 });
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+// 👇 Directly use process.env.PORT or 3000
+app.listen(process.env.PORT || 3000, () => {
+    console.log(`Server running on port ${process.env.PORT || 3000}`);
+});
