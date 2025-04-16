@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>لوحة الإدارة</title>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <!-- Firebase Database -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cairo:wght@200..1000&family=Harmattan:wght@400;500;600;700&display=swap');
+
+        :root {
+        --primary-color: #6A008A; /* لون البنفسجي للأزرار */
+        --background-color: #0F0F1A; /* الخلفية الداكنة */
+        --text-color: #FFFFFF; /* اللون الأبيض للنصوص */
+        --card-color: #1C1C2E; /* لون البطاقات */
+        --default-indicator: #151513;
+        --visited-indicator: #00FF26;
+        --primary: #4a6fa5;
+        --secondary: #6d89b6;
+        --light: #f5f7fa;
+        --dark: #333;
+        --success: #4caf50;
+        --danger: #f44336;
+        }
+        /* Reset and Global Styles */
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Cairo', 'Tajawal', sans-serif;
+        
+        }
+        body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Cairo', 'Tajawal', sans-serif;
+        background-color: #16192c;
+        direction: rtl;
+        height: 100%;
+
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 0;
+            position: relative;
+            display: flex;
+            padding-top: 80px;  
+            height: 100%;
+            flex-direction: column;
+            animation: slide-up 0.5s ease-in-out;
+        }
+        .header {
+            padding: 10px;
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 1000;
+            background-color: #232836;
+            color: white;
+            height: 80px;
+            align-items: center;
+            height: 50px;
+            }
+
+            .header h1 {
+            font-size: 18px;
+            margin: 0;
+            font-weight: bold;
+            z-index: 1;
+            }
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-form {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .resource-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        
+        .add-resource-btn, .save-lesson-btn, .login-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .remove-resource-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        
+        .lesson-list {
+            margin-top: 30px;
+            color: white;
+        }
+        
+        .lesson-item-admin {
+            background-color: #f5f5f5;
+            color: black;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .delete-lesson-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .lesson-resources {
+            margin-top: 10px;
+        }
+        
+        .resource-item {
+            margin-bottom: 5px;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .status-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .resource-container {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .lesson-item-admin {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .page-item-admin {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .lesson-resources {
+            margin-top: 10px;
+        }
+        .resource-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .nav-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .nav-tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-right: 5px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+        }
+        .nav-tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .lesson-page-info {
+            font-style: italic;
+            color: #666;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">لوحة الإدارة</h1>
+    </div>
+    <div class="container">
+        <div id="app-container">
+            <!-- Content will be loaded dynamically based on auth state -->
+        </div>
+    </div>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            // Replace with your Firebase config
+            apiKey: "AIzaSyBvbbuhQNVencIyjVyyxbAMUZjFiXdVtQ8",
+            authDomain: "admin-math-rev-app.firebaseapp.com",
+            databaseURL: "https://admin-math-rev-app-default-rtdb.firebaseio.com",
+            projectId: "admin-math-rev-app",
+            storageBucket: "admin-math-rev-app.firebasestorage.app",
+            messagingSenderId: "874062454138",
+            appId: "1:874062454138:web:9fe810237ea5077f208ac3",
+            measurementId: "G-WH3XQDL2E6"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        const database = firebase.database();
+        const auth = firebase.auth();
+        const appContainer = document.getElementById('app-container');
+        
+        // Check auth state
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in
+                loadPages().then(() => {
+                    showAdminPanel();
+                });
+            } else {
+                // User is signed out
+                showLoginForm();
+            }
+        });
+        
+        // Global variable to store lesson pages
+        let lessonPages = [];
+        
+        // Load lesson pages from Firebase
+        async function loadPages() {
+            try {
+                const snapshot = await database.ref('pages').once('value');
+                lessonPages = [];
+                
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnapshot => {
+                        const page = childSnapshot.val();
+                        lessonPages.push(page);
+                    });
+                }
+                
+                // If no pages exist yet, add default pages
+                if (lessonPages.length === 0) {
+                    lessonPages = [
+                        { id: "lessons1", name: "الدروس1" },
+                        { id: "lessons2", name: "الدروس2" },
+                        { id: "lessons3", name: "الدروس3" }
+                    ];
+                    
+                    // Save default pages to Firebase
+                    const pagesRef = database.ref('pages');
+                    for (const page of lessonPages) {
+                        pagesRef.child(page.id).set(page);
+                    }
+                }
+                
+                return lessonPages;
+            } catch (error) {
+                console.error("Error loading pages:", error);
+                return [
+                    { id: "lessons1", name: "الدروس1" },
+                    { id: "lessons2", name: "الدروس2" },
+                    { id: "lessons3", name: "الدروس3" }
+                ];
+            }
+        }
+        
+        function showLoginForm() {
+            appContainer.innerHTML = `
+                <div class="login-container">
+                    <h2>تسجيل الدخول</h2>
+                    <div id="status-message"></div>
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" id="email" class="form-control" placeholder="أدخل البريد الإلكتروني">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">كلمة المرور</label>
+                        <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
+                    </div>
+                    <button type="button" id="login-btn" class="login-btn">تسجيل الدخول</button>
+                </div>
+            `;
+            
+            document.getElementById('login-btn').addEventListener('click', () => {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                auth.signInWithEmailAndPassword(email, password)
+                    .catch(error => {
+                        // Handle login errors
+                        const statusMessage = document.getElementById('status-message');
+                        statusMessage.className = 'status-message status-error';
+                        statusMessage.textContent = 'خطأ في تسجيل الدخول: ' + error.message;
+                    });
+            });
+        }
+        
+        function showAdminPanel() {
+            appContainer.innerHTML = `
+                <div class="admin-container">
+                    <button id="logout-btn" class="remove-resource-btn" style="margin-bottom: 20px;">تسجيل الخروج</button>
+                    <div id="status-message"></div>
+                    
+                    <div class="nav-tabs">
+                        <div class="nav-tab active" data-tab="lessons-tab">إدارة الدروس</div>
+                        <div class="nav-tab" data-tab="pages-tab">إدارة الصفحات</div>
+                        <div class="nav-tab" data-tab="view-tab">عرض الصفحات والدروس</div>
+                    </div>
+                    
+                    <!-- Lessons Management Tab -->
+                    <div class="tab-content active" id="lessons-tab">
+                        <div class="admin-form">
+                            <h2>إضافة درس جديد</h2>
+                            <div class="form-group">
+                                <label for="lesson-name">اسم الدرس</label>
+                                <input type="text" id="lesson-name" class="form-control" placeholder="مثال: الدرس الأول">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="page-id">الصفحة</label>
+                                <select id="page-id" class="form-control">
+                                    ${lessonPages.map(page => `<option value="${page.id}">${page.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            
+                            <div id="resources-container">
+                                <!-- Resource inputs will be added here -->
+                            </div>
+                            
+                            <button type="button" id="add-resource-btn" class="add-resource-btn">+ إضافة مورد</button>
+                            <button type="button" id="save-lesson-btn" class="save-lesson-btn">حفظ الدرس</button>
+                        </div>
+                        
+                        <div class="page-filter">
+                            <label for="filter-page">تصفية حسب الصفحة:</label>
+                            <select id="filter-page" class="form-control">
+                                <option value="all">جميع الصفحات</option>
+                                ${lessonPages.map(page => `<option value="${page.id}">${page.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="lesson-list" id="lesson-list">
+                            <!-- Existing lessons will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Pages Management Tab -->
+                    <div class="tab-content" id="pages-tab">
+                        <div class="admin-form">
+                            <h2>إضافة صفحة دروس جديدة</h2>
+                            <div class="form-group">
+                                <label for="page-name">اسم الصفحة</label>
+                                <input type="text" id="page-name" class="form-control" placeholder="مثال: الدروس الرياضية">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="page-id-new">معرف الصفحة (بالإنجليزية بدون مسافات)</label>
+                                <input type="text" id="page-id-new" class="form-control" placeholder="مثال: math_lessons">
+                            </div>
+                            
+                            <button type="button" id="save-page-btn" class="save-lesson-btn">حفظ الصفحة</button>
+                        </div>
+                        
+                        <div class="pages-list" id="pages-list">
+                            <!-- Existing pages will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <!-- View Pages and Lessons Tab -->
+                    <div class="tab-content" id="view-tab">
+                        <h2>جميع الصفحات والدروس</h2>
+                        <div id="pages-lessons-view">
+                            <!-- Pages and their lessons will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                auth.signOut();
+            });
+            
+            // Tab navigation
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show selected tab content
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Reload data when switching to view tab
+                    if (tabId === 'view-tab') {
+                        loadPagesAndLessons();
+                    } else if (tabId === 'pages-tab') {
+                        loadPagesList();
+                    }
+                });
+            });
+            
+            // Lessons Management Tab
+            const resourcesContainer = document.getElementById('resources-container');
+            const addResourceBtn = document.getElementById('add-resource-btn');
+            const saveLessonBtn = document.getElementById('save-lesson-btn');
+            const filterPage = document.getElementById('filter-page');
+            
+            // Add initial resource input
+            addResourceInput();
+            
+            // Load and display existing lessons
+            loadLessons();
+            
+            addResourceBtn.addEventListener('click', addResourceInput);
+            saveLessonBtn.addEventListener('click', saveLesson);
+            filterPage.addEventListener('change', loadLessons);
+            
+            // Pages Management Tab
+            const savePageBtn = document.getElementById('save-page-btn');
+            savePageBtn.addEventListener('click', savePage);
+            
+            // Load pages list
+            loadPagesList();
+        }
+        
+        function addResourceInput(data = null) {
+            const resourceDiv = document.createElement('div');
+            resourceDiv.className = 'resource-container';
+            
+            resourceDiv.innerHTML = `
+                <div class="form-group">
+                    <label>نوع المورد</label>
+                    <select class="form-control resource-type">
+                        <option value="video" ${data && data.type === 'video' ? 'selected' : ''}>فيديو</option>
+                        <option value="pdf" ${data && data.type === 'pdf' ? 'selected' : ''}>ملف PDF</option>
+                        <option value="custom" ${data && data.type === 'custom' ? 'selected' : ''}>آخر</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>رابط المورد</label>
+                    <input type="text" class="form-control resource-url" value="${data ? data.url : ''}">
+                </div>
+                <div class="form-group">
+                    <label>عنوان المورد</label>
+                    <input type="text" class="form-control resource-label" value="${data ? data.label : ''}">
+                </div>
+                <button type="button" class="remove-resource-btn">حذف</button>
+            `;
+            
+            document.getElementById('resources-container').appendChild(resourceDiv);
+            
+            // Add remove button functionality
+            const removeBtn = resourceDiv.querySelector('.remove-resource-btn');
+            removeBtn.addEventListener('click', () => {
+                resourceDiv.remove();
+            });
+        }
+        
+        function saveLesson() {
+            const lessonName = document.getElementById('lesson-name').value.trim();
+            const pageId = document.getElementById('page-id').value;
+            
+            if (!lessonName) {
+                showStatusMessage('الرجاء إدخال اسم الدرس', 'error');
+                return;
+            }
+            
+            // Collect resources
+            const resourceContainers = document.querySelectorAll('.resource-container');
+            const resources = [];
+            
+            resourceContainers.forEach(container => {
+                const type = container.querySelector('.resource-type').value;
+                const url = container.querySelector('.resource-url').value.trim();
+                const label = container.querySelector('.resource-label').value.trim();
+                
+                if (url && label) {
+                    resources.push({
+                        type: type,
+                        url: url,
+                        label: label
+                    });
+                }
+            });
+            
+            if (resources.length === 0) {
+                showStatusMessage('الرجاء إضافة مورد واحد على الأقل', 'error');
+                return;
+            }
+            
+            // Create new lesson
+            const newLesson = {
+                id: Date.now().toString(), // Use timestamp as ID
+                name: lessonName,
+                pageId: pageId, // Store the page ID
+                resources: resources,
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            // Save to Firebase
+            const lessonsRef = database.ref('lessons');
+            lessonsRef.child(newLesson.id).set(newLesson)
+                .then(() => {
+                    // Reset form
+                    document.getElementById('lesson-name').value = '';
+                    document.getElementById('resources-container').innerHTML = '';
+                    addResourceInput();
+                    
+                    showStatusMessage('تم حفظ الدرس بنجاح', 'success');
+                    
+                    // Reload lessons
+                    loadLessons();
+                })
+                .catch(error => {
+                    showStatusMessage('حدث خطأ: ' + error.message, 'error');
+                });
+        }
+        
+        function loadLessons() {
+            const lessonList = document.getElementById('lesson-list');
+            const filterValue = document.getElementById('filter-page').value;
+            
+            lessonList.innerHTML = '<h2>الدروس الحالية</h2><div id="lessons-loading">جاري تحميل الدروس...</div>';
+            
+            const lessonsRef = database.ref('lessons');
+            lessonsRef.once('value')
+                .then(snapshot => {
+                    const lessonsContainer = document.createElement('div');
+                    
+                    if (!snapshot.exists()) {
+                        lessonsContainer.innerHTML = '<p>لا توجد دروس حاليًا</p>';
+                    } else {
+                        let hasLessons = false;
+                        
+                        snapshot.forEach(childSnapshot => {
+                            const lesson = childSnapshot.val();
+                            
+                            // Apply filter
+                            if (filterValue !== 'all' && lesson.pageId !== filterValue) {
+                                return;
+                            }
+                            
+                            hasLessons = true;
+                            const lessonDiv = document.createElement('div');
+                            lessonDiv.className = 'lesson-item-admin';
+                            
+                            // Find page name for display
+                            let pageName = 'غير معروف';
+                            const pageInfo = lessonPages.find(p => p.id === lesson.pageId);
+                            if (pageInfo) {
+                                pageName = pageInfo.name;
+                            }
+                            
+                            lessonDiv.innerHTML = `
+                                <h3>${lesson.name}</h3>
+                                <p class="lesson-page-info">الصفحة: ${pageName}</p>
+                                <button class="delete-lesson-btn" data-id="${lesson.id}">حذف</button>
+                                <div class="lesson-resources">
+                                    <h4>الموارد:</h4>
+                                    ${lesson.resources.map(resource => `
+                                        <div class="resource-item">
+                                            <strong>${resource.label}</strong> (${resource.type}): ${resource.url}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                            
+                            lessonsContainer.appendChild(lessonDiv);
+                            
+                            // Add delete functionality
+                            const deleteBtn = lessonDiv.querySelector('.delete-lesson-btn');
+                            deleteBtn.addEventListener('click', () => {
+                                if (confirm('هل أنت متأكد من حذف هذا الدرس؟')) {
+                                    deleteLesson(lesson.id);
+                                }
+                            });
+                        });
+                        
+                        if (!hasLessons) {
+                            lessonsContainer.innerHTML = '<p>لا توجد دروس تطابق معايير التصفية الحالية</p>';
+                        }
+                    }
+                    
+                    document.getElementById('lessons-loading').remove();
+                    lessonList.appendChild(lessonsContainer);
+                })
+                .catch(error => {
+                    document.getElementById('lessons-loading').innerHTML = 'حدث خطأ أثناء تحميل الدروس: ' + error.message;
+                });
+        }
+        
+        function deleteLesson(id) {
+            database.ref('lessons/' + id).remove()
+                .then(() => {
+                    showStatusMessage('تم حذف الدرس بنجاح', 'success');
+                    loadLessons();
+                })
+                .catch(error => {
+                    showStatusMessage('حدث خطأ أثناء حذف الدرس: ' + error.message, 'error');
+                });
+        }
+        
+        function savePage() {
+            const pageName = document.getElementById('page-name').value.trim();
+            const pageId = document.getElementById('page-id-new').value.trim();
+            
+            if (!pageName || !pageId) {
+                showStatusMessage('الرجاء إدخال اسم ومعرف الصفحة', 'error');
+                return;
+            }
+            
+            // Check if pageId is valid (alphanumeric and underscores only)
+            if (!/^[a-zA-Z0-9_]+$/.test(pageId)) {
+                showStatusMessage('معرف الصفحة يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات سفلية فقط', 'error');
+                return;
+            }
+            
+            // Check if pageId already exists
+            if (lessonPages.some(page => page.id === pageId)) {
+                showStatusMessage('معرف الصفحة موجود بالفعل، الرجاء اختيار معرف آخر', 'error');
+                return;
+            }
+            
+            // Create new page
+            const newPage = {
+                id: pageId,
+                name: pageName,
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            // Save to Firebase
+            const pagesRef = database.ref('pages');
+            pagesRef.child(newPage.id).set(newPage)
+                .then(() => {
+                    // Reset form
+                    document.getElementById('page-name').value = '';
+                    document.getElementById('page-id-new').value = '';
+                    
+                    showStatusMessage('تم حفظ الصفحة بنجاح', 'success');
+                    
+                    // Add to lessonPages array
+                    lessonPages.push(newPage);
+                    
+                    // Update page selectors
+                    updatePageSelectors();
+                    
+                    // Reload pages list
+                    loadPagesList();
+                })
+                .catch(error => {
+                    showStatusMessage('حدث خطأ: ' + error.message, 'error');
+                });
+        }
+        
+        function loadPagesList() {
+            const pagesList = document.getElementById('pages-list');
+            pagesList.innerHTML = '<h2>الصفحات الحالية</h2><div id="pages-loading">جاري تحميل الصفحات...</div>';
+            
+            database.ref('pages').once('value')
+                .then(snapshot => {
+                    const pagesContainer = document.createElement('div');
+                    
+                    if (!snapshot.exists() || snapshot.numChildren() === 0) {
+                        pagesContainer.innerHTML = '<p>لا توجد صفحات حاليًا</p>';
+                    } else {
+                        snapshot.forEach(childSnapshot => {
+                            const page = childSnapshot.val();
+                            const pageDiv = document.createElement('div');
+                            pageDiv.className = 'page-item-admin';
+                            
+                            pageDiv.innerHTML = `
+                                <h3>${page.name}</h3>
+                                <p>المعرف: ${page.id}</p>
+                                <button class="delete-page-btn" data-id="${page.id}">حذف</button>
+                            `;
+                            
+                            pagesContainer.appendChild(pageDiv);
+                            
+                            // Add delete functionality
+                            const deleteBtn = pageDiv.querySelector('.delete-page-btn');
+                            deleteBtn.addEventListener('click', () => {
+                                if (confirm('هل أنت متأكد من حذف هذه الصفحة؟ سيتم حذف جميع الدروس المرتبطة بها أيضًا!')) {
+                                    deletePage(page.id);
+                                }
+                            });
+                        });
+                    }
+                    
+                    if (document.getElementById('pages-loading')) {
+                        document.getElementById('pages-loading').remove();
+                    }
+                    pagesList.appendChild(pagesContainer);
+                })
+                .catch(error => {
+                    if (document.getElementById('pages-loading')) {
+                        document.getElementById('pages-loading').innerHTML = 'حدث خطأ أثناء تحميل الصفحات: ' + error.message;
+                    }
+                });
+        }
+        
+        function deletePage(id) {
+            // First, check if there are lessons associated with this page
+            database.ref('lessons').orderByChild('pageId').equalTo(id).once('value')
+                .then(snapshot => {
+                    // Delete all lessons associated with this page
+                    if (snapshot.exists()) {
+                        const updates = {};
+                        snapshot.forEach(childSnapshot => {
+                            updates['/lessons/' + childSnapshot.key] = null;
+                        });
+                        return database.ref().update(updates);
+                    }
+                    return Promise.resolve();
+                })
+                .then(() => {
+                    // Now delete the page itself
+                    return database.ref('pages/' + id).remove();
+                })
+                .then(() => {
+                    showStatusMessage('تم حذف الصفحة بنجاح', 'success');
+                    
+                    // Remove from lessonPages array
+                    lessonPages = lessonPages.filter(page => page.id !== id);
+                    
+                    // Update page selectors
+                    updatePageSelectors();
+                    
+                    // Reload pages list
+                    loadPagesList();
+                })
+                .catch(error => {
+                    showStatusMessage('حدث خطأ أثناء حذف الصفحة: ' + error.message, 'error');
+                });
+        }
+        
+        function updatePageSelectors() {
+            // Update page selector in lessons tab
+            const pageSelector = document.getElementById('page-id');
+            if (pageSelector) {
+                pageSelector.innerHTML = lessonPages.map(page => 
+                    `<option value="${page.id}">${page.name}</option>`
+                ).join('');
+            }
+            
+            // Update filter selector in lessons tab
+            const filterSelector = document.getElementById('filter-page');
+            if (filterSelector) {
+                filterSelector.innerHTML = `
+                    <option value="all">جميع الصفحات</option>
+                    ${lessonPages.map(page => `<option value="${page.id}">${page.name}</option>`).join('')}
+                `;
+            }
+        }
+        
+        function loadPagesAndLessons() {
+            const container = document.getElementById('pages-lessons-view');
+            container.innerHTML = '<div id="view-loading">جاري تحميل البيانات...</div>';
+            
+            Promise.all([
+                database.ref('pages').once('value'),
+                database.ref('lessons').once('value')
+            ])
+            .then(([pagesSnapshot, lessonsSnapshot]) => {
+                const viewContainer = document.createElement('div');
+                
+                // Group lessons by page
+                const lessonsByPage = {};
+                if (lessonsSnapshot.exists()) {
+                    lessonsSnapshot.forEach(childSnapshot => {
+                        const lesson = childSnapshot.val();
+                        if (!lessonsByPage[lesson.pageId]) {
+                            lessonsByPage[lesson.pageId] = [];
+                        }
+                        lessonsByPage[lesson.pageId].push(lesson);
+                    });
+                }
+                
+                // Display pages and their lessons
+                if (!pagesSnapshot.exists() || pagesSnapshot.numChildren() === 0) {
+                    viewContainer.innerHTML = '<p>لا توجد صفحات متاحة</p>';
+                } else {
+                    pagesSnapshot.forEach(childSnapshot => {
+                        const page = childSnapshot.val();
+                        const pageSection = document.createElement('div');
+                        pageSection.className = 'page-section';
+                        
+                        pageSection.innerHTML = `
+                            <h3 class="page-title">${page.name} (${page.id})</h3>
+                            <div class="page-lessons">
+                                ${lessonsByPage[page.id] && lessonsByPage[page.id].length > 0 
+                                    ? lessonsByPage[page.id].map(lesson => `
+                                        <div class="lesson-item">
+                                            <h4>${lesson.name}</h4>
+                                            <div class="lesson-resources">
+                                                <p>الموارد:</p>
+                                                <ul>
+                                                    ${lesson.resources.map(resource => `
+                                                        <li><strong>${resource.label}</strong> (${resource.type})</li>
+                                                    `).join('')}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    `).join('') 
+                                    : '<p>لا توجد دروس في هذه الصفحة</p>'
+                                }
+                            </div>
+                        `;
+                        
+                        viewContainer.appendChild(pageSection);
+                    });
+                }
+                
+                // Remove loading message and append content
+                document.getElementById('view-loading').remove();
+                container.appendChild(viewContainer);
+            })
+            .catch(error => {
+                document.getElementById('view-loading').innerHTML = 'حدث خطأ أثناء تحميل البيانات: ' + error.message;
+            });
+        }
+        
+        function showStatusMessage(message, type) {
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message status-' + type;
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                statusMessage.textContent = '';
+                statusMessage.className = '';
+            }, 3000);
+        }
+
+        // Auto logout after 1 hour of inactivity
+        let inactivityTimer;
+        const LOGOUT_TIME = 60 * 60 * 1000; // 1 hour in milliseconds
+
+        // Function to reset the timer
+        function resetTimer() {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(logoutUser, LOGOUT_TIME);
+        }
+
+        // Function to perform logout
+        function logoutUser() {
+        console.log("User automatically logged out due to inactivity");
+        auth.signOut(); // Your existing logout function
+        // Optional: Redirect to login page
+        window.location.href = '/login';
+        }
+
+        // Set up event listeners for user activity
+        function setupInactivityMonitoring() {
+        // Reset timer on various user interactions
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        
+        events.forEach(event => {
+            document.addEventListener(event, resetTimer, true);
+        });
+        
+        // Initialize the timer when the user logs in
+        resetTimer();
+        }
+
+        // Call this function when your app initializes
+        setupInactivityMonitoring();
+    </script>
+</body>
+</html>

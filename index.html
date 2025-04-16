@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ابدأ الآن</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/network-check.js"></script>
+</head>
+<body>
+    <script>
+        // إذا كان المستخدم قد سجل الدخول مسبقًا، يتم توجيهه تلقائيًا
+        if (localStorage.getItem("userName") && localStorage.getItem("educationalLevel") == 'الثانية ثانوي') {
+            window.location.href = "screens/mainmenu.html";
+        }
+    </script>
+
+    <div class="container">
+        <div class="screen screen-get-started">
+            <h1>الرياضيات للجميع!</h1>
+            <svg width="171" height="171" viewBox="0 0 171 171" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M85.5 162.094C127.802 162.094 162.094 127.802 162.094 85.5C162.094 43.1984 127.802 8.90625 85.5 8.90625C43.1984 8.90625 8.90625 43.1984 8.90625 85.5C8.90625 127.802 43.1984 162.094 85.5 162.094Z" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M33.8438 99.8355V71.1324L48.2113 99.8676L62.5789 71.1752V99.8676M91.4707 71.1324H110.509M100.99 99.8676V71.1324M118.118 71.1324V99.8676M137.156 71.1324V99.8676M118.118 85.4466H137.156M87.0212 90.2559H74.5738M71.4709 99.7821L80.8082 71.1324L90.1491 99.8676" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>                
+            <button class="start-btn" onclick="showForm()">ابدأ الآن</button>
+        </div>
+
+        <div class="screen screen-enter-info" style="display: none;">
+            <h1>أدخل معلوماتك</h1>
+            <form onsubmit="saveUserInfo(event)">
+                <input type="text" id="name" placeholder="اسمك" required>
+                <input type="number" id="age" placeholder="عمرك" required>
+                <button type="submit" class="start-btn">متابعة</button>
+            </form>
+        </div>
+
+        <div class="screen screen-education-level" style="display: none;">
+            <h1>ماهو مستواك الدراسي؟</h1>
+            <button class="edu-btn" onclick="saveEducationLevel('الأولى ثانوي')">السنة الأولى ثانوي</button>
+            <button class="edu-btn" onclick="saveEducationLevel('الثانية ثانوي')">السنة الثانية ثانوي</button>
+            <button class="edu-btn" onclick="saveEducationLevel('الثالثة ثانوي')">السنة الثالثة ثانوي</button>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    function showForm() {
+        document.querySelector(".screen-get-started").style.display = "none";
+        document.querySelector(".screen-enter-info").style.display = "block";
+    }
+
+    function saveUserInfo(event) {
+        event.preventDefault(); // منع إعادة تحميل الصفحة
+
+        const userName = document.getElementById("name").value.trim();
+        const userAge = document.getElementById("age").value.trim();
+
+        if (userName && userAge) {
+            localStorage.setItem("userName", userName);
+            localStorage.setItem("userAge", userAge);
+            document.querySelector(".screen-enter-info").style.display = "none";
+            document.querySelector(".screen-education-level").style.display = "block";
+        }
+    }
+
+    function saveEducationLevel(level) {
+    localStorage.setItem("educationalLevel", level);
+    
+    if (localStorage.getItem("educationalLevel") === 'الثانية ثانوي') {
+        window.location.href = "screens/mainmenu.html";  // التوجيه للصفحة الرئيسية
+    }
+    else if (localStorage.getItem("educationalLevel") =='الأولى ثانوي') {
+        window.location.href = "screens/1stlevel/soon.html";  // التوجيه للصفحة الرئيسية
+    }
+    else {
+        window.location.href = "screens/3rdlevel/soon.html"; 
+    }
+}
+
+
+</script>
